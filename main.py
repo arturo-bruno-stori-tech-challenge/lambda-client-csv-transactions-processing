@@ -57,10 +57,17 @@ def lambda_handler(event, context):
     print(f'Key: "{key}"')
 
     try:
-        csv_file = s3.get_object(Bucket=bucket, Key=key)['Body'].read().decode('utf-8').splitlines()
+        s3_object = s3.get_object(Bucket=bucket, Key=key)
+        print('s3_object', s3_object)
+
+        s3_body = s3_object['Body']
+        print('s3_body', s3_body)
+
+        csv_file = s3_body.read().decode('utf-8').splitlines()
         print('csv_file', csv_file)
     except Exception as e:
-        print(f'Error getting object {key} from bucket {bucket}: "{e}"')
+        print('ERROR:', e)
+        # print(f'Error getting object {key} from bucket {bucket}: "{e}"')
         raise e
 
     client_transactions = csv.DictReader(csv_file)
