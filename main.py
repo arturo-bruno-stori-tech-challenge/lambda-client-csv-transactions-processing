@@ -2,7 +2,6 @@ import os
 import csv
 import json
 import logging
-import psycopg2
 import urllib.parse
 from pathlib import Path
 
@@ -18,16 +17,16 @@ rds_username = os.environ.get('RDS_USERNAME')
 rds_user_pwd = os.environ.get('RDS_USER_PWD')
 rds_db_name = os.environ.get('RDS_DB_NAME')
 
-try:
-    conn = psycopg2.connect(
-        host=rds_host,
-        user=rds_username,
-        password=rds_user_pwd
-    )
-except:
-    logging.error("ERROR: Could not connect to Postgres instance.")
-else:
-    logging.info("SUCCESS: Connection to RDS Postgres instance succeeded")
+# try:
+#     conn = psycopg2.connect(
+#         host=rds_host,
+#         user=rds_username,
+#         password=rds_user_pwd
+#     )
+# except:
+#     logging.error("ERROR: Could not connect to Postgres instance.")
+# else:
+#     logging.info("SUCCESS: Connection to RDS Postgres instance succeeded")
 
 
 def move_s3_file(bucket, file, destination):
@@ -45,6 +44,8 @@ def move_s3_file(bucket, file, destination):
 
 def lambda_handler(event, context):
     logging.info(f'Received event: {json.dumps(event, indent=2)}')
+    logging.info(f'host: "{rds_host}"')
+    logging.info(f'user: "{rds_username}"')
 
     filename = event['Records'][0]['s3']['object']['key']
     bucket = event['Records'][0]['s3']['bucket']['name']
