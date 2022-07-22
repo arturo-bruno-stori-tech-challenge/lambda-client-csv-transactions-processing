@@ -1,2 +1,2 @@
 boto3~=1.24.34
-psycopg2~=2.9.3
+PyMySQL~=1.0.2
