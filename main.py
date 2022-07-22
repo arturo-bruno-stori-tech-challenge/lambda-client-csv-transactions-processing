@@ -6,7 +6,9 @@ from pathlib import Path
 from datetime import date, datetime
 
 import boto3
+from faker import Faker
 
+fake = Faker()
 s3 = boto3.client('s3')
 s3_resource = boto3.resource('s3')
 
@@ -56,7 +58,8 @@ def create_client(client_name: str):
     print(f'Creating client: "{client_name}"')
     try:
         with db.cursor() as cursor:
-            cursor.execute('INSERT INTO clients(name) VALUES(%s)', client_name)
+            fake_email = fake.ascii_email()
+            cursor.execute('INSERT INTO clients(name, email) VALUES(%s, %s)', (client_name, fake_email))
             db.commit()
             print('Client successfully created!')
 
@@ -101,11 +104,16 @@ def parse_transaction_date(transaction_date: str) -> date:
 def lambda_handler(event, context):
     print(f'Received event: {json.dumps(event)}')
 
-    filename = event['Records'][0]['s3']['object']['key']
     bucket = event['Records'][0]['s3']['bucket']['name']
-
-    client_name = Path(filename).stem.replace('_', ' ')
+    filename = event['Records'][0]['s3']['object']['key']
     csv_file = s3.get_object(Bucket=bucket, Key=filename)['Body'].read().decode('utf-8').splitlines()
+
+    # For quick local development
+    # bucket = 'local'
+    # filename = '../miscellaneous/csvs/challenge_example.csv'
+    # csv_file = Path(filename).open()
+
+    client_name = Path(filename).stem.replace('_', ' ').title()
     print(f'Client: "{client_name}"')
     print(f'Bucket: "{bucket}"')
     print(f'File: "{filename}"')
