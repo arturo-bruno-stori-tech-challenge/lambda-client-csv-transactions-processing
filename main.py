@@ -43,9 +43,9 @@ def move_s3_file(bucket, file, destination):
 
 
 def lambda_handler(event, context):
-    logging.info(f'Received event: {json.dumps(event, indent=2)}')
-    logging.info(f'host: "{rds_host}"')
-    logging.info(f'user: "{rds_username}"')
+    print(f'Received event: {json.dumps(event, indent=2)}')
+    print(f'host: "{rds_host}"')
+    print(f'user: "{rds_username}"')
 
     filename = event['Records'][0]['s3']['object']['key']
     bucket = event['Records'][0]['s3']['bucket']['name']
@@ -71,10 +71,5 @@ def lambda_handler(event, context):
         # Save each transaction to the database to the specific client
 
     # Move the CSV file to "processed" folder
-    copy_source = {
-        'Bucket': bucket,
-        'Key': key.replace('unprocessed', 'processing')
-    }
-    s3.meta.client.copy(copy_source, bucket, 'processed/')
 
     # Send event to trigger
