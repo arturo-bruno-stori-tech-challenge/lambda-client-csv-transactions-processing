@@ -57,7 +57,7 @@ def lambda_handler(event, context):
     print(f'Key: "{key}"')
 
     try:
-        csv_file = s3.get_object(Bucket=bucket, Key=key)['Body'].read().splitlines()
+        csv_file = s3.get_object(Bucket=bucket, Key=key)['Body'].read().decode('utf-8').splitlines()
         print('csv_file', csv_file)
     except Exception as e:
         print(f'Error getting object {key} from bucket {bucket}: "{e}"')
