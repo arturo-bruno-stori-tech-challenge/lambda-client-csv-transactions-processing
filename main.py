@@ -1,21 +1,22 @@
 import os
 import csv
 import json
+import boto3
 import pymysql
 from pathlib import Path
 from datetime import date, datetime
 
-import boto3
-from faker import Faker
-
-fake = Faker()
 s3 = boto3.client('s3')
+sns = boto3.client('sns')
 s3_resource = boto3.resource('s3')
 
 rds_host = os.getenv('RDS_HOST')
 rds_username = os.getenv('RDS_USERNAME')
 rds_password = os.getenv('RDS_PASSWORD')
 rds_database = os.getenv('RDS_DATABASE')
+aws_region = os.getenv('AWS_REGION')
+clients_email = os.getenv('CLIENTS_FAKE_EMAIL')
+summary_notification_topic = os.getenv('SUMMARY_NOTIFICATION_TOPIC')
 
 try:
     db = pymysql.connect(
@@ -58,8 +59,7 @@ def create_client(client_name: str):
     print(f'Creating client: "{client_name}"')
     try:
         with db.cursor() as cursor:
-            fake_email = fake.ascii_email()
-            cursor.execute('INSERT INTO clients(name, email) VALUES(%s, %s)', (client_name, fake_email))
+            cursor.execute('INSERT INTO clients(name, email) VALUES(%s, %s)', (client_name, clients_email))
             db.commit()
             print('Client successfully created!')
 
@@ -67,6 +67,26 @@ def create_client(client_name: str):
     except Exception as exception:
         print(f'Could not create client "{client_name}": "{exception}"')
         exit(1)
+
+
+def trigger_summary_notification_send(client_id: str, topic: str = summary_notification_topic):
+    print(f'Publishing a message to "{topic}" with client_id: "{client_id}"')
+    try:
+        message = {
+            'default': {
+                'client_id': client_id
+            }
+        }
+        response = sns.publish(
+            TopicArn=f'arn:aws:sns:{aws_region}:{topic}',
+            Message=json.dumps(message),
+            MessageStructure='json'
+        )
+    except Exception as exception:
+        print(f'Could not publish to "topic": "{exception}"')
+        exit(1)
+    else:
+        return response
 
 
 def save_transactions(client: dict, client_transactions: list):
@@ -139,6 +159,7 @@ def lambda_handler(event, context):
     )
 
     # Send event to trigger
+    trigger_summary_notification_send(client['Id'])
 
     # Finish function successfully
     message = f'Client "{client_name}" CSV transactions file "{bucket}.{processed_filename}". Processed successfully'

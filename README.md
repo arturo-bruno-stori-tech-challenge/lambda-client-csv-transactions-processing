@@ -6,10 +6,13 @@ Handle the S3 events when receiving a new client CSV transaction file
 * Save the transactions into the database
 
 ## Environment variables needed
-* RDS_HOST
-* RDS_USERNAME
-* RDS_PASSWORD
-* RDS_DATABASE
+ * RDS_HOST
+ * RDS_USERNAME
+ * RDS_PASSWORD
+ * RDS_DATABASE
+ * AWS_REGION
+ * CLIENTS_FAKE_EMAIL
+ * SUMMARY_NOTIFICATION_TOPIC
 
 ## Tables needed in database
 * clients
