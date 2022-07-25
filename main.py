@@ -73,9 +73,9 @@ def trigger_summary_notification_send(client_id: str, topic: str = summary_notif
     print(f'Publishing a message to "{topic}" with client_id: "{client_id}"')
     try:
         message = {
-            'default': {
+            'default': json.dumps({
                 'client_id': client_id
-            }
+            })
         }
         response = sns.publish(
             TopicArn=f'arn:aws:sns:{aws_region}:{topic}',
@@ -159,7 +159,7 @@ def lambda_handler(event, context):
     )
 
     # Send event to trigger
-    trigger_summary_notification_send(client['Id'])
+    trigger_summary_notification_send(client['id'])
 
     # Finish function successfully
     message = f'Client "{client_name}" CSV transactions file "{bucket}.{processed_filename}". Processed successfully'
